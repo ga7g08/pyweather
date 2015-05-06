@@ -17,14 +17,14 @@ def date_formatter(date):
 def print_table(xaxis, ylow, yhigh, ny=20, xlabel="Month/Year"):
     " Print ASCII table for range y1-> y2 "
 
-    nx = len(highs)
+    nx = len(yhigh)
 
     MAX = np.ceil(np.max(yhigh))
     MIN = np.floor(np.min(ylow))
     range_vals = np.linspace(MAX, MIN, ny+1)
 
-    high_binned = [find_nearest(range_vals, val) for val in highs]
-    low_binned = [find_nearest(range_vals, val) for val in lows]
+    high_binned = [find_nearest(range_vals, val) for val in yhigh]
+    low_binned = [find_nearest(range_vals, val) for val in ylow]
 
     yaxis = ["{:04.01f} |".format(v) if i%2 == 0 else "     |"
              for (i, v) in enumerate(range_vals)]
@@ -55,32 +55,33 @@ def print_table(xaxis, ylow, yhigh, ny=20, xlabel="Month/Year"):
     print("\n")
 
 
-geolocator = Nominatim()
+def main():
+    geolocator = Nominatim()
 
-api_key = open('api.txt', 'r').readline().rstrip("\n")
+    api_key = open('api.txt', 'r').readline().rstrip("\n")
 
-user_input_location = raw_input("Enter your location: ")
+    user_input_location = raw_input("Enter your location: ")
 
-location = geolocator.geocode(user_input_location)
+    location = geolocator.geocode(user_input_location)
 
-forecast = forecastio.load_forecast(api_key,
-                                    location.latitude,
-                                    location.longitude)
+    forecast = forecastio.load_forecast(api_key,
+                                        location.latitude,
+                                        location.longitude)
 
-current_temp = forecast.currently()
+    current_temp = forecast.currently()
 
-print("Current temp is: {} Celcius".format(current_temp.temperature))
-print("Currently it is: {}".format(current_temp.summary))
-print("Nearest storm is: {} miles".format(current_temp.nearestStormDistance))
+    print("Current temp is: {} Celcius".format(current_temp.temperature))
+    print("Currently it is: {}".format(current_temp.summary))
+    print("Nearest storm is: {} miles".format(current_temp.nearestStormDistance))
 
-byDay = forecast.daily()
-date = []
-lows = []
-highs = []
-for dailyData in byDay.data:
-    date.append(dailyData.time)
-    lows.append(dailyData.temperatureMin)
-    highs.append(dailyData.temperatureMax)
+    byDay = forecast.daily()
+    date = []
+    lows = []
+    highs = []
+    for dailyData in byDay.data:
+        date.append(dailyData.time)
+        lows.append(dailyData.temperatureMin)
+        highs.append(dailyData.temperatureMax)
 
-xaxis = [date_formatter(d) for d in date]
-print_table(xaxis, lows, highs)
+    xaxis = [date_formatter(d) for d in date]
+    print_table(xaxis, lows, highs)
