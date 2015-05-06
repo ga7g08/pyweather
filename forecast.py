@@ -6,24 +6,17 @@ geolocator = Nominatim()
 
 api_key = open('api.txt', 'r').readline().rstrip("\n")
 
-zip = input("Enter your zip: ")
-zip = str(zip)
+user_input_location = raw_input("Enter your location: ")
 
-zipCode = re.compile(r"^\d{5}(-\d{4})?$")
+location = geolocator.geocode(user_input_location)
 
-if zipCode.match(zip):
-    location = geolocator.geocode(zip)
+forecast = forecastio.load_forecast(api_key, location.latitude, location.longitude)
 
-    forecast = forecastio.load_forecast(api_key, location.latitude, location.longitude)
+current_temp = forecast.currently()
 
-    current_temp = forecast.currently()
-
-    print "Current temp is:",current_temp.temperature
-    print "Currently it is:",current_temp.summary
-    print "Nearest storm is:",current_temp.nearestStormDistance,"miles."
-
-else:
-    print "The zip is not valid."
+print "Current temp is:",current_temp.temperature
+print "Currently it is:",current_temp.summary
+print "Nearest storm is:",current_temp.nearestStormDistance,"miles."
 
 
 byDay = forecast.daily()
