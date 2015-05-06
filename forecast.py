@@ -4,9 +4,7 @@ from geopy.geocoders import Nominatim
 
 geolocator = Nominatim()
 
-f = open('api.txt', 'r')
-
-api_key = f.read()
+api_key = open('api.txt', 'r').readline().rstrip("\n")
 
 zip = input("Enter your zip: ")
 zip = str(zip)
