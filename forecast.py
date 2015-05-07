@@ -55,6 +55,31 @@ def print_table(xaxis, ylow, yhigh, ny=20, xlabel="Month/Year"):
     print("\n")
 
 
+def get_ascii_icon(icon):
+    if icon == "rain":
+        ascii_icon =  [[r"/" if (i+j)%2 == 1 else " " for i in range(5)] for j in range(3)]
+    elif icon == "wind":
+        ascii_icon =  [[r"~" if (i+j)%2 == 0 else " " for i in range(5)] for j in range(3)]
+    elif icon == "partly-cloudy-day":
+        ascii_icon = [[" ", " ", "_", " ", " "],
+                      [" ", "(", "_", ")", " "],
+                      ["(", "_", "_", ")", ")"]]
+    else:
+        ascii_icon =  [[r" " for i in range(5)] for j in range(3)]
+
+    return ascii_icon
+
+def print_weather(icons, rows=3):
+
+    ascii_icons = [get_ascii_icon(ic) for ic in icons]
+
+    for row in range(rows):
+        line = "        "
+        for ic in ascii_icons:
+            line += "".join(ic[row])
+            line += "  "
+        print line
+
 def main():
     geolocator = Nominatim()
 
@@ -71,17 +96,30 @@ def main():
     current_temp = forecast.currently()
 
     print("Current temp is: {} Celcius".format(current_temp.temperature))
-    print("Currently it is: {}".format(current_temp.summary))
-    print("Nearest storm is: {} miles".format(current_temp.nearestStormDistance))
+    try:
+        print("Currently it is: {}".format(current_temp.summary))
+    except forecastio.utils.PropertyUnavailable:
+        pass
+    try:
+        print("Nearest storm is: {} miles".format(current_temp.nearestStormDistance))
+    except forecastio.utils.PropertyUnavailable:
+        pass
+
 
     byDay = forecast.daily()
     date = []
     lows = []
     highs = []
+    icons = []
     for dailyData in byDay.data:
         date.append(dailyData.time)
         lows.append(dailyData.temperatureMin)
         highs.append(dailyData.temperatureMax)
+        icons.append(dailyData.icon)
 
     xaxis = [date_formatter(d) for d in date]
+    print_weather(icons)
     print_table(xaxis, lows, highs)
+
+if __name__ == "__main__":
+    main()
