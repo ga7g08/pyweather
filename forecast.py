@@ -83,7 +83,8 @@ def print_weather(icons, rows=3):
 def main():
     geolocator = Nominatim()
 
-    api_key = open('api.txt', 'r').readline().rstrip("\n")
+    api_key_path = '/usr/local/etc/.forecastio_apikey.txt'
+    api_key = open(api_key_path, 'r').readline().rstrip("\n")
 
     user_input_location = raw_input("Enter your location: ")
 
