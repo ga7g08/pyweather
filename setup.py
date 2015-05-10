@@ -6,11 +6,8 @@ import os
 setup(name='pyweather',
       packages=[''],
       version='1.0',
-      entry_points={
-          'console_scripts': [
-              'forecast = forecast:main'
-          ]
-      }
+      install_requires = ["python-forecastio", "geopy"],
+      entry_points={'console_scripts': ['forecast = forecast:main']}
       )
 
 
