@@ -1,9 +1,13 @@
+import argparse
+import numpy as np
+import os
+import shutil
+
 import forecastio
 from geopy.geocoders import Nominatim
-import numpy as np
 
 
-def find_nearest(array,value):
+def find_nearest(array, value):
     " Find the idx of nearest to value in array "
     idx = (np.abs(array-value)).argmin()
     return idx
@@ -26,10 +30,10 @@ def print_table(xaxis, ylow, yhigh, ny=20, xlabel="Month/Year"):
     high_binned = [find_nearest(range_vals, val) for val in yhigh]
     low_binned = [find_nearest(range_vals, val) for val in ylow]
 
-    yaxis = ["{:04.01f} |".format(v) if i%2 == 0 else "     |"
+    yaxis = ["{:04.01f} |".format(v) if i % 2 == 0 else "     |"
              for (i, v) in enumerate(range_vals)]
 
-    dx = 3 # Should be odd
+    dx = 3  # Should be odd
     dx_gap = 2
     delta = dx + 2 * dx_gap
     ydata = np.array([[" " for i in range(ny+1)] for j in range(delta*nx)])
@@ -69,8 +73,8 @@ def get_ascii_icon(icon):
 
     return ascii_icon
 
-def print_weather(icons, rows=3):
 
+def print_weather(icons, rows=3):
     ascii_icons = [get_ascii_icon(ic) for ic in icons]
 
     for row in range(rows):
@@ -80,15 +84,10 @@ def print_weather(icons, rows=3):
             line += "  "
         print line
 
-def main():
+
+def print_forecast(user_input_location, api_key):
     geolocator = Nominatim()
-
-    api_key_path = '/usr/local/etc/.forecastio_apikey.txt'
-    api_key = open(api_key_path, 'r').readline().rstrip("\n")
-
-    user_input_location = raw_input("Enter your location: ")
-
-    location = geolocator.geocode(user_input_location)
+    location = geolocator.geocode(user_input_location, timeout=10)
 
     forecast = forecastio.load_forecast(api_key,
                                         location.latitude,
@@ -121,6 +120,89 @@ def main():
     xaxis = [date_formatter(d) for d in date]
     print_weather(icons)
     print_table(xaxis, lows, highs)
+
+
+def InstallAPIKey(api_key_path):
+    """ Attempts methods to help install the API key for user """
+
+    if os.path.isfile(api_key_path):
+        responce = raw_input(
+            "A API key file already exists, should I just use this (y/n)\n")
+        if responce in ['y', 'yes', 'Y']:
+            return
+        else:
+            pass
+    else:
+        print("\nAttempting to install an API key file")
+
+    cur_dir = os.path.dirname(os.path.realpath(__file__))
+    local_src = cur_dir + "/api.txt"
+    if os.path.isfile(local_src):
+        try:
+            shutil.copyfile(local_src, api_key_path)
+        except IOError:
+            raise ValueError(
+                "Failed to copy the local_src {} to {}".format(
+                    local_src, api_key_path)
+                )
+    else:
+        print("No file 'api.txt' found, attempt to get the information from\n"
+              "the user.")
+        api_string = raw_input(
+            "\nIn order to use pyweather, you need a forecast.io api key. \n"
+            "Please visit www.developer.forecast.io to register, and paste "
+            "your API key below:\n\n")
+        InstallAPIKeyFromString(api_key_path, api_string)
+
+
+def InstallAPIKeyFromString(api_key_path, api_string):
+        if api_string.isalnum() and len(api_string) == 32:
+            print("\n Installing with API key '{}'".format(api_string))
+            with open(api_key_path, "w+") as f:
+                f.write(api_string)
+        else:
+            raise ValueError(
+                "It appears the API key you have provided is of an invalid "
+                "format")
+
+def main():
+
+    # Set up the argument parser
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+
+    parser.add_argument("-l", "--location", default=None, type=str,
+                        help="Location for forecast")
+    parser.add_argument("-a", "--print_api", action='store_true',
+                        help="If called, print the current api key")
+    parser.add_argument("-u", "--update_api", help="Update the api_key",
+                        type=str)
+
+    args = parser.parse_args()
+
+    # Read in the api_key
+    api_key_path = '~.forecastio_apikey.txt'
+    try:
+        api_string = open(api_key_path, 'r').readline().rstrip("\n")
+    except IOError:
+        InstallAPIKey(api_key_path)
+
+    if args.print_api:
+        print("Current api_key, stored in {} is: {}".format(
+            api_key_path, api_string))
+        return
+
+    if args.update_api:
+        InstallAPIKeyFromString(api_key_path, args.update_api)
+        return
+
+    if args.location:
+        user_input_location = args.location
+    else:
+        user_input_location = raw_input("Enter your location: ")
+
+    print_forecast(user_input_location, api_string)
 
 if __name__ == "__main__":
     main()
