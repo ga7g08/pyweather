@@ -2,7 +2,6 @@ import argparse
 import numpy as np
 import os
 import shutil
-
 import forecastio
 from geopy.geocoders import Nominatim
 
@@ -150,7 +149,7 @@ def InstallAPIKey(api_key_path):
               "the user.")
         api_string = raw_input(
             "\nIn order to use pyweather, you need a forecast.io api key. \n"
-            "Please visit www.developer.forecast.io to register, and paste "
+            "Please visit www.developer.forecast.io to register, and paste\n"
             "your API key below:\n\n")
         InstallAPIKeyFromString(api_key_path, api_string)
 
@@ -182,11 +181,12 @@ def main():
     args = parser.parse_args()
 
     # Read in the api_key
-    api_key_path = '~.forecastio_apikey.txt'
+    api_key_path = os.environ['HOME'] + '/.forecastio_apikey.txt'
     try:
         api_string = open(api_key_path, 'r').readline().rstrip("\n")
     except IOError:
         InstallAPIKey(api_key_path)
+        return
 
     if args.print_api:
         print("Current api_key, stored in {} is: {}".format(
