@@ -84,9 +84,21 @@ def print_weather(icons, rows=3):
         print line
 
 
+def print_address(location):
+    for line in location.address.split(", "):
+        print line
+
+
 def print_forecast(user_input_location, api_key):
+
     geolocator = Nominatim()
     location = geolocator.geocode(user_input_location, timeout=10)
+    if location is not None:
+        print("Weather for:")
+        print_address(location)
+    else:
+        raise ValueError("Geopy has failed to find a location for {}".format(
+            user_input_location))
 
     forecast = forecastio.load_forecast(api_key,
                                         location.latitude,
@@ -198,7 +210,7 @@ def main():
         return
 
     if args.location:
-        user_input_location = args.location
+        user_input_location = " ".join(args.location)
     else:
         user_input_location = raw_input("Enter your location: ")
 
