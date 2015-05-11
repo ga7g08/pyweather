@@ -1,19 +1,40 @@
-#README
-___
+# forecast
 
-This script returns weather conditions for the zip code you enter from the command line.
+This is a fork of Jody White's [pyweather](http://github.com/jhwhite/pyweather)
+which:
 
-This uses Geopy to convert the Zip code to Latitude and Longitude coordinates then uses those coordinates to look up the weather conditions. Right now this only returns:
+>Uses Geopy to convert (almost) any location into Latitude and Longitude
+>coordinates, and then use those coordinates to look up the weather conditions.
 
-* `Current temp`
-* `Current conditions`
-* `Nearest storm`
-* `Eight day (including current day) high and low temperatures`
+This fork create a command line program which outputs the forecast to the
+terminal.
 
-You can easily add other data points from the documentation found here: https://developer.forecast.io/docs/v2/#data-points
+To use this, you will need an api key from Forecast.io which can be found by
+registering [here](https://developer.forecast.io)
 
-You will need an api key from Forecast. You can get one here: https://developer.forecast.io/
+## Installation
 
-You will need to put your api key in a file called api.txt in the same directory as the script. Do not add anyhting to the file other then your api key.
+Clone the source, then
 
-After adding the file simply run the script from the command line.
+    python setup.py install
+
+On the first use, you will be asked for the API key found on [the forecast
+wbesite](https://developer.forecast.io). The API key is stored in
+`~/.pyweatherrc` and can be edited manually, or accesed through the command
+line flags (see `forecast -h`).
+
+## Usage
+
+Typical usage consists of calling with either the `-l` or equivalently the
+`--location` flag for example:
+
+![Budapest demo](Budapest_demo.png)
+
+A location will be requested if none is given.
+
+## ToDo
+
+* Improve and finish ASCII weather symbols
+* Add a default location to the rc file
+
+

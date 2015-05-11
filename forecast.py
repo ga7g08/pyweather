@@ -176,6 +176,7 @@ def InstallAPIKeyFromString(api_key_path, api_string):
                 "It appears the API key you have provided is of an invalid "
                 "format")
 
+
 def main():
 
     # Set up the argument parser
@@ -193,7 +194,7 @@ def main():
     args = parser.parse_args()
 
     # Read in the api_key
-    api_key_path = os.environ['HOME'] + '/.forecastio_apikey.txt'
+    api_key_path = os.environ['HOME'] + '/.pyweatherrc'
     try:
         api_string = open(api_key_path, 'r').readline().rstrip("\n")
     except IOError:
