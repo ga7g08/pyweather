@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 import argparse
 import numpy as np
 import os
@@ -39,7 +41,7 @@ def print_table(xaxis, ylow, yhigh, ny=20, xlabel="Month/Year"):
     delta = dx + 2 * dx_gap
     ydata = np.array([[" " for i in range(ny+1)] for j in range(delta*nx)])
 
-    for i, jhigh, jlow in zip(range(0, delta*nx, delta),
+    for i, jhigh, jlow in zip(list(range(0, delta*nx, delta)),
                               high_binned, low_binned):
         ydata[i+dx_gap:i+dx_gap+dx, jhigh] = "_"
         ydata[i+dx_gap:i+dx_gap+dx, jlow] = "_"
@@ -47,7 +49,7 @@ def print_table(xaxis, ylow, yhigh, ny=20, xlabel="Month/Year"):
 
     print("\nTemp (C)")
     for i in range(ny+1):
-        print yaxis[i], "".join(ydata.T[i])
+        print(yaxis[i], "".join(ydata.T[i]))
 
     xaxisline = ("".join([" " for j in range(6)]) +
                  "".join(["_" for j in range(delta*nx)]))
@@ -56,7 +58,7 @@ def print_table(xaxis, ylow, yhigh, ny=20, xlabel="Month/Year"):
 
     print(xaxisline)
     print(xaxislabel)
-    print("".join((6+nx) * ["  "]) + xlabel)
+    print(("".join((6+nx) * ["  "]) + xlabel))
     print("\n")
 
 
@@ -83,11 +85,11 @@ def print_weather(icons, rows=3):
         for ic in ascii_icons:
             line += "".join(ic[row])
             line += "  "
-        print line
+        print(line)
 
 
 def print_address(address):
-    print address
+    print(address)
 
 
 def print_forecast(input_location, api_key):
@@ -119,13 +121,13 @@ def print_forecast(input_location, api_key):
 
     current_temp = forecast.currently()
 
-    print("Current temp is: {} Celcius".format(current_temp.temperature))
+    print(("Current temp is: {} Celcius".format(current_temp.temperature)))
     try:
-        print("Currently it is: {}".format(current_temp.summary))
+        print(("Currently it is: {}".format(current_temp.summary)))
     except forecastio.utils.PropertyUnavailable:
         pass
     try:
-        print("Nearest storm is: {} miles".format(current_temp.nearestStormDistance))
+        print(("Nearest storm is: {} miles".format(current_temp.nearestStormDistance)))
     except forecastio.utils.PropertyUnavailable:
         pass
 
@@ -150,7 +152,7 @@ def InstallAPIKey(api_key_path):
     """ Attempts methods to help install the API key for user """
 
     if os.path.isfile(api_key_path):
-        responce = raw_input(
+        responce = input(
             "A API key file already exists, should I just use this (y/n)\n")
         if responce in ['y', 'yes', 'Y']:
             return
@@ -172,7 +174,7 @@ def InstallAPIKey(api_key_path):
     else:
         print("No file 'api.txt' found, attempt to get the information from\n"
               "the user.")
-        api_string = raw_input(
+        api_string = input(
             "\nIn order to use pyweather, you need a forecast.io api key. \n"
             "Please visit www.developer.forecast.io to register, and paste\n"
             "your API key below:\n\n")
@@ -181,7 +183,7 @@ def InstallAPIKey(api_key_path):
 
 def InstallAPIKeyFromString(api_key_path, api_string):
         if api_string.isalnum() and len(api_string) == 32:
-            print("\n Installing with API key '{}'".format(api_string))
+            print(("\n Installing with API key '{}'".format(api_string)))
             with open(api_key_path, "w+") as f:
                 f.write(api_string)
         else:
@@ -221,8 +223,8 @@ def main():
         return
 
     if args.print_api:
-        print("Current api_key, stored in {} is: {}".format(
-            api_key_path, api_string))
+        print(("Current api_key, stored in {} is: {}".format(
+            api_key_path, api_string)))
         return
 
     if args.update_api:
@@ -235,7 +237,7 @@ def main():
         try:
             user_input_location = TryGetLocation()
         except:
-            user_input_location = raw_input("Could not find a location..\n"
+            user_input_location = input("Could not find a location..\n"
                                             "please enter it manually")
 
     print_forecast(user_input_location, api_string)
