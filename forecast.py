@@ -4,6 +4,8 @@ import os
 import shutil
 import forecastio
 from geopy.geocoders import Nominatim
+import simplejson
+import urllib2
 
 
 def find_nearest(array, value):
@@ -84,25 +86,36 @@ def print_weather(icons, rows=3):
         print line
 
 
-def print_address(location):
-    for line in location.address.split(", "):
-        print line
+def print_address(address):
+    print address
 
 
-def print_forecast(user_input_location, api_key):
+def print_forecast(input_location, api_key):
 
-    geolocator = Nominatim()
-    location = geolocator.geocode(user_input_location, timeout=10)
-    if location is not None:
-        print("Weather for:")
-        print_address(location)
+    if type(input_location) == dict:
+        try:
+            lat = input_location['latitude']
+            lon = input_location['longitude']
+            address = "{}, {}".format(input_location['city'], 
+                                      input_location['country_code'])
+        except KeyError:
+            raise ValueError(
+                "The input_location {} does not contain the latitide and "
+                "longitude and city")
     else:
-        raise ValueError("Geopy has failed to find a location for {}".format(
-            user_input_location))
+        geolocator = Nominatim()
+        location = geolocator.geocode(input_location, timeout=10)
+        if location is None:
+            raise ValueError("Geopy has failed to find a location for {}".format(
+                input_location))
+        lat = location.latitude
+        lon = location.longitude
+        address = location.address
 
-    forecast = forecastio.load_forecast(api_key,
-                                        location.latitude,
-                                        location.longitude)
+    print("Weather for:")
+    print_address(address)
+
+    forecast = forecastio.load_forecast(api_key, lat, lon)
 
     current_temp = forecast.currently()
 
@@ -177,6 +190,12 @@ def InstallAPIKeyFromString(api_key_path, api_string):
                 "format")
 
 
+def TryGetLocation():
+    url = "http://freegeoip.net/json/"
+    result = simplejson.loads(urllib2.urlopen(url).read())
+    return result
+
+
 def main():
 
     # Set up the argument parser
@@ -213,7 +232,11 @@ def main():
     if args.location:
         user_input_location = " ".join(args.location)
     else:
-        user_input_location = raw_input("Enter your location: ")
+        try:
+            user_input_location = TryGetLocation()
+        except:
+            user_input_location = raw_input("Could not find a location..\n"
+                                            "please enter it manually")
 
     print_forecast(user_input_location, api_string)
 
