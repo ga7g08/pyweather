@@ -8,6 +8,7 @@ import forecastio
 from geopy.geocoders import Nominatim
 import simplejson
 import urllib2
+from termcolor import colored
 
 
 def find_nearest(array, value):
@@ -21,7 +22,7 @@ def date_formatter(date):
     return "{:02}/{:02}".format(date.month, date.day)
 
 
-def print_table(xaxis, ylow, yhigh, ny=20, xlabel="Month/Year"):
+def print_table(xaxis, ylow, yhigh, ny=20, xlabel="Day/Month"):
     " Print ASCII table for range y1-> y2 "
 
     nx = len(yhigh)
@@ -33,7 +34,7 @@ def print_table(xaxis, ylow, yhigh, ny=20, xlabel="Month/Year"):
     high_binned = [find_nearest(range_vals, val) for val in yhigh]
     low_binned = [find_nearest(range_vals, val) for val in ylow]
 
-    yaxis = ["{:04.01f} |".format(v) if i % 2 == 0 else "     |"
+    yaxis = ["{:04.01f} ".format(v) if i % 2 == 0 else "     "
              for (i, v) in enumerate(range_vals)]
 
     dx = 3  # Should be odd
@@ -47,9 +48,9 @@ def print_table(xaxis, ylow, yhigh, ny=20, xlabel="Month/Year"):
         ydata[i+dx_gap:i+dx_gap+dx, jlow] = "_"
         ydata[i+dx_gap + (dx-1)/2, jhigh+1:jlow+1] = ":"
 
-    print("\nTemp (C)")
+    print(colored("Temp (C)", "green"))
     for i in range(ny+1):
-        print(yaxis[i], "".join(ydata.T[i]))
+        print(colored(yaxis[i], "blue") + "|", "".join(ydata.T[i]))
 
     xaxisline = ("".join([" " for j in range(6)]) +
                  "".join(["_" for j in range(delta*nx)]))
@@ -57,39 +58,47 @@ def print_table(xaxis, ylow, yhigh, ny=20, xlabel="Month/Year"):
     xaxislabel = "        " + "  ".join(xaxis)
 
     print(xaxisline)
-    print(xaxislabel)
-    print(("".join((6+nx) * ["  "]) + xlabel))
+    print(colored(xaxislabel, "blue"))
+    print(colored(("".join((6+nx) * ["  "]) + xlabel), "green"))
     print("\n")
 
 
-def get_ascii_icon(icon):
-    if icon == "rain":
-        ascii_icon =  [[r"/" if (i+j)%2 == 1 else " " for i in range(5)] for j in range(3)]
-    elif icon == "wind":
-        ascii_icon =  [[r"~" if (i+j)%2 == 0 else " " for i in range(5)] for j in range(3)]
+def get_text_icon(icon):
+    if icon == "partly-cloudy-night":
+        ascii_icon = [["C", "l", "o", "u", "d"]]
     elif icon == "partly-cloudy-day":
-        ascii_icon = [[" ", " ", "_", " ", " "],
-                      [" ", "(", "_", ")", " "],
-                      ["(", "_", "_", ")", ")"]]
+        ascii_icon = [["C", "l", "o", "u", "d"]]
+    elif icon == "clear-day":
+        ascii_icon = [["C", "l", "e", "a", "r"]]
+    elif icon == "clear-night":
+        ascii_icon = [["C", "l", "e", "a", "r"]]
+    elif icon == "rain":
+        ascii_icon = [["R", "a", "i", "n", " "]]
+    elif icon == "snow":
+        ascii_icon = [["S", "n", "o", "w", " "]]
+    elif icon == "sleet":
+        ascii_icon = [["S", "l", "e", "e", "t"]]
+    elif icon == "wind":
+        ascii_icon = [["W", "i", "n", "d", " "]]
+    elif icon == "fog":
+        ascii_icon = [[" ", "F", "o", "g", " "]]
+    elif icon == "cloudy":
+        ascii_icon = [["C", "l", "o", "u", "d"]]
     else:
-        ascii_icon =  [[r" " for i in range(5)] for j in range(3)]
+        ascii_icon = [[" ", " ", " ", " ", " "]]
 
     return ascii_icon
 
 
-def print_weather(icons, rows=3):
-    ascii_icons = [get_ascii_icon(ic) for ic in icons]
+def print_weather(icons, rows=1):
+    text_icons = [get_text_icon(ic) for ic in icons]
 
     for row in range(rows):
         line = "        "
-        for ic in ascii_icons:
+        for ic in text_icons:
             line += "".join(ic[row])
             line += "  "
         print(line)
-
-
-def print_address(address):
-    print(address)
 
 
 def print_forecast(input_location, api_key):
@@ -98,7 +107,7 @@ def print_forecast(input_location, api_key):
         try:
             lat = input_location['latitude']
             lon = input_location['longitude']
-            address = "{}, {}".format(input_location['city'], 
+            address = "{}, {}".format(input_location['city'],
                                       input_location['country_code'])
         except KeyError:
             raise ValueError(
@@ -115,7 +124,7 @@ def print_forecast(input_location, api_key):
         address = location.address
 
     print("Weather for:")
-    print_address(address)
+    print(address)
 
     forecast = forecastio.load_forecast(api_key, lat, lon)
 
